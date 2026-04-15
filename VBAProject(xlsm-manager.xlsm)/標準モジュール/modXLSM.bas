@@ -423,3 +423,148 @@ ContinueLoop:
 
     ReadImportableCodeFromClassFile = result
 End Function
+
+' ファイルダイアログを用いて、任意のエクセルマクロファイルを指定し、VBAProjectをインポートするサブルーチン
+' ========================================================================
+'
+' 引数
+' ----
+' なし
+'
+' 戻り値
+' ------
+' なし
+'
+' 動作概要
+' -------
+' 1. ファイルダイアログを開いて、ユーザにインポートするファイルを指定してもらう。
+' 2. 実行前にメッセージボックスで実行確認する。
+' 3. 実行結果をメッセージボックスで表示する。
+'
+Public Sub ExportProjects()
+    On Error GoTo ErrorHandler
+    
+    Dim fileDialog As Object
+    Dim selectedFile As String
+    Dim confirmResult As VbMsgBoxResult
+    Dim exportResult As Boolean
+    Dim resultMessage As String
+    
+    ' ファイルダイアログを開く
+    Set fileDialog = Application.fileDialog(3) ' 3 = msoFileDialogFilePicker
+    
+    With fileDialog
+        .Title = "エクスポートするVBAプロジェクトを含むExcelファイルを選択"
+        .AllowMultiSelect = False
+        .Filters.Clear
+        .Filters.Add "Excel マクロ有効ファイル (*.xlsm;*.xlm)", "*.xlsm;*.xlm"
+        .Filters.Add "すべてのファイル (*.*)", "*.*"
+        .FilterIndex = 1
+        .InitialFileName = ""
+        .Show
+        
+        If .SelectedItems.Count = 0 Then
+            ' ファイルが選択されなかった場合は終了
+            Exit Sub
+        End If
+        
+        selectedFile = .SelectedItems(1)
+    End With
+    
+    ' 実行確認メッセージボックス
+    confirmResult = MsgBox( _
+        "次のファイルからVBAプロジェクトをエクスポートします。" & vbCrLf & vbCrLf & _
+        selectedFile & vbCrLf & vbCrLf & _
+        "よろしいですか？", _
+        vbExclamation + vbYesNo, _
+        "エクスポート確認")
+    
+    If confirmResult <> vbYes Then
+        ' ユーザーが「いいえ」を選択した場合は終了
+        MsgBox "エクスポートがキャンセルされました。", vbInformation
+        Exit Sub
+    End If
+    
+    ' VBAプロジェクトをエクスポート
+    exportResult = ExportAll(selectedFile)
+    
+    ' 結果をメッセージボックスで表示
+    If exportResult Then
+        resultMessage = "VBAプロジェクトのエクスポートが正常に完了しました。" & vbCrLf & vbCrLf & _
+                        "ファイル: " & selectedFile
+        MsgBox resultMessage, vbInformation, "エクスポート完了"
+    Else
+        ' エラーメッセージはExportAll関数内で表示されるため、ここでは追加表示しない
+    End If
+    
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "VBAプロジェクトのエクスポートが失敗しました。" & vbCrLf & vbCrLf & _
+            "ファイル: " & selectedFile & vbCrLf & vbCrLf & _
+            "予期しないエラーが発生しました: " & Err.Description, vbExclamation, "エクスポート失敗"
+End Sub
+
+Public Sub ImportProjects()
+    On Error GoTo ErrorHandler
+    
+    Dim fileDialog As Object
+    Dim selectedFile As String
+    Dim confirmResult As VbMsgBoxResult
+    Dim importResult As Boolean
+    Dim resultMessage As String
+    
+    ' ファイルダイアログを開く
+    Set fileDialog = Application.fileDialog(3) ' 3 = msoFileDialogFilePicker
+    
+    With fileDialog
+        .Title = "インポートするVBAプロジェクトを含むExcelファイルを選択"
+        .AllowMultiSelect = False
+        .Filters.Clear
+        .Filters.Add "Excel マクロ有効ファイル (*.xlsm;*.xlm)", "*.xlsm;*.xlm"
+        .Filters.Add "すべてのファイル (*.*)", "*.*"
+        .FilterIndex = 1
+        .InitialFileName = ""
+        .Show
+        
+        If .SelectedItems.Count = 0 Then
+            ' ファイルが選択されなかった場合は終了
+            Exit Sub
+        End If
+        
+        selectedFile = .SelectedItems(1)
+    End With
+    
+    ' 実行確認メッセージボックス
+    confirmResult = MsgBox( _
+        "次のファイルからVBAプロジェクトをインポートします。" & vbCrLf & vbCrLf & _
+        selectedFile & vbCrLf & vbCrLf & _
+        "よろしいですか？", _
+        vbExclamation + vbYesNo, _
+        "インポート確認")
+    
+    If confirmResult <> vbYes Then
+        ' ユーザーが「いいえ」を選択した場合は終了
+        MsgBox "インポートがキャンセルされました。", vbInformation
+        Exit Sub
+    End If
+    
+    ' VBAプロジェクトをインポート
+    importResult = ImportAll(selectedFile)
+    
+    ' 結果をメッセージボックスで表示
+    If importResult Then
+        resultMessage = "VBAプロジェクトのインポートが正常に完了しました。" & vbCrLf & vbCrLf & _
+                        "ファイル: " & selectedFile
+        MsgBox resultMessage, vbInformation, "インポート完了"
+    Else
+        ' エラーメッセージはImportAll関数内で表示されるため、ここでは追加表示しない
+    End If
+    
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "VBAプロジェクトのインポートが失敗しました。" & vbCrLf & vbCrLf & _
+            "ファイル: " & selectedFile & vbCrLf & vbCrLf & _
+            "予期しないエラーが発生しました: " & Err.Description, vbExclamation, "インポート失敗"
+End Sub
