@@ -81,7 +81,7 @@ xlsm-manager import ./MyMacro.xlsm
 ### パラメーター
 
 | パラメーター | 必須 | 説明 |
-|---|---|---|
+| --- | --- | --- |
 | `Command` | ○ | 実行するコマンド。`export` または `import` を指定します。 |
 | `TargetPath` | ○ | 対象の `.xlsm` ファイルのパス（相対パス・絶対パスどちらも可）。 |
 
@@ -110,14 +110,14 @@ chmod +x xlsm-manager.sh
 Unix 形式のパス（相対・絶対どちらも可）をそのまま渡せます。Windows パスへの変換はスクリプトが自動的に行います。
 
 | 環境 | パス例 |
-|---|---|
+| --- | --- |
 | Git Bash | `./target.xlsm` または `/c/work/target.xlsm` |
 | WSL (Ubuntu) | `./target.xlsm` または `/mnt/c/work/target.xlsm` |
 
 #### プラットフォーム判定の仕組み
 
 | 環境 | 判定方法 | パス変換コマンド |
-|---|---|---|
+| --- | --- | --- |
 | Git Bash | `uname -s` が `MINGW*` / `MSYS*` / `CYGWIN*` | `cygpath -w` |
 | WSL (Ubuntu) | `uname -s` が `Linux` かつ `/proc/version` に `microsoft` を含む | `wslpath -w` |
 
@@ -138,7 +138,7 @@ VBAProject のすべてのモジュールをテキストファイルとしてエ
 
 **出力先フォルダ構造：**
 
-```
+```text
 target.xlsm と同じフォルダ/
 └── VBAProject(target.xlsm)/
     ├── Microsoft Excel Objects/   # シートやブックモジュール (.cls)
@@ -171,7 +171,7 @@ target.xlsm と同じフォルダ/
 
 **バックアップ先：**
 
-```
+```text
 VBAProject(target.xlsm)/
 └── ._ImportBackup_/
     └── yyyyMMdd_HHmmss/        # インポート実行時刻のタイムスタンプ
@@ -186,7 +186,7 @@ VBAProject(target.xlsm)/
 ----
 
 | コード | 意味 |
-|---|---|
+| --- | --- |
 | `0` | 正常終了 |
 | `1` | 対象ファイルが存在しない |
 | `2` | 処理中にエラーが発生した |
@@ -196,7 +196,7 @@ VBAProject(target.xlsm)/
 使用例
 ----
 
-**PowerShell の場合**
+### PowerShell の場合
 
 ```powershell
 # VBA をエクスポートしてバージョン管理に追加する
@@ -209,7 +209,7 @@ git pull
 .\xlsm-manager.ps1 import "C:\work\MyMacro.xlsm"
 ```
 
-**Git Bash / WSL (Ubuntu) の場合**
+### Git Bash / WSL (Ubuntu) の場合
 
 ```bash
 # VBA をエクスポートしてバージョン管理に追加する
@@ -221,4 +221,3 @@ git commit -m "update VBA"
 git pull
 ./xlsm-manager.sh import ./MyMacro.xlsm
 ```
-
