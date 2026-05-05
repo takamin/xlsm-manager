@@ -66,10 +66,6 @@ $ErrorActionPreference = 'Stop'
 # ヘルパー関数
 # ---------------------------------------------------------------------------
 
-function Ensure-Dir([string]$path) {
-    if (-not (Test-Path $path)) { New-Item -ItemType Directory -Path $path | Out-Null }
-}
-
 # .cls ファイルから VERSION/Attribute ヘッダを除いたコード本体を返す
 function Read-ImportableCode([string]$path) {
     $lines    = [System.IO.File]::ReadAllLines($path, [System.Text.Encoding]::Default)
@@ -128,7 +124,7 @@ $excel.DisplayAlerts = $false
 # ===========================================================================
 function Invoke-Export {
     foreach ($dir in @($vbaProjectDir, $excelObjectsDir, $stdModuleDir, $classModuleDir)) {
-        Ensure-Dir $dir
+        if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir | Out-Null }
     }
 
     $wb = $excel.Workbooks.Open($TargetPath, $true) # ReadOnly
@@ -170,7 +166,7 @@ function Invoke-Import {
     $backupClass  = Join-Path $backupRoot "クラス モジュール"
 
     foreach ($dir in @($backupParent, $backupRoot, $backupExcel, $backupStd, $backupClass)) {
-        Ensure-Dir $dir
+        if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir | Out-Null }
     }
 
     $wb = $excel.Workbooks.Open($TargetPath, $false) # 書き込み可
