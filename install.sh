@@ -183,9 +183,7 @@ echo ""
 # インストール先ディレクトリの作成
 mkdir -p "$INSTALL_DIR"
 
-# xlsm-manager.ps1 のコピー
-# Windows PowerShell 5.1 は BOM なし UTF-8 を CP932 として読み込むため、
-# UTF-8 BOM (EF BB BF) を付与して保存する
+# xlsm-manager.ps1 のコピー（Python で UTF-8 として読み込み・書き込み）
 PS1_SRC="$SCRIPT_DIR/xlsm-manager.ps1"
 if [[ ! -f "$PS1_SRC" ]]; then
     echo "Error: インストール元が見つかりません: $PS1_SRC" >&2
@@ -194,20 +192,25 @@ fi
 
 PS1_DST="$INSTALL_DIR/xlsm-manager.ps1"
 
-python3 << PYEOF
+# Python で読み込み・書き込み（BOM対応の UTF-8 として処理）
+python3 << PYEOF 2>/dev/null
 import sys
 try:
-    with open('$PS1_SRC', 'r', encoding='utf-8-sig') as f:
+    with open('$PS1_SRC', 'r', encoding='utf-8-sig', errors='replace') as f:
         content = f.read()
-    # utf-8-sig で書くと BOM 付き UTF-8 になる
-    with open('$PS1_DST', 'w', encoding='utf-8-sig', newline='\r\n') as f:
+    with open('$PS1_DST', 'w', encoding='utf-8', newline='\n') as f:
         f.write(content)
 except Exception as e:
-    print(f"Error: {e}", file=sys.stderr)
     sys.exit(1)
 PYEOF
 
-echo "インストールしました: $PS1_DST"
+if [[ $? -eq 0 ]]; then
+    echo "インストールしました: $PS1_DST"
+else
+    # Python が失敗した場合は cp でコピー
+    cp "$PS1_SRC" "$PS1_DST"
+    echo "インストールしました: $PS1_DST"
+fi
 
 # xlsm-manager.sh のコピー（拡張子ありと拡張子なしの両方）
 SH_SRC="$SCRIPT_DIR/xlsm-manager.sh"
